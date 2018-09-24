@@ -59,4 +59,4 @@ thanks----
 https://sushant747.gitbooks.io/total-oscp-guide/privilege_escalation_windows.html
 https://medium.com/@rahmatnurfauzi/windows-privilege-escalation-scripts-techniques-30fa37bd194
 http://www.fuzzysecurity.com/tutorials/16.html
-
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Privilege%20Escalation.md
