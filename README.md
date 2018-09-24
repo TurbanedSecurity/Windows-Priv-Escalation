@@ -32,6 +32,7 @@
 15)Insecure Named Pipes Permissions
 
 --------------------------------Links and commands-----
+
 ->Windows Unquoted Service Paths
 Basically, it is a vulnerability that occurs if a service executable path is not enclosed with quotation marks and contains space.
 To identify these unquoted services you can run this command on Windows Command Shell:
@@ -87,7 +88,7 @@ https://medium.com/@rahmatnurfauzi/windows-privilege-escalation-scripts-techniqu
 http://www.hackingarticles.in/window-privilege-escalation-via-automated-script/
 Includes Sherlock,JAWS,Windows Exploit suggester, Power Up
 
-thanks----
+--------thanks----
 https://sushant747.gitbooks.io/total-oscp-guide/privilege_escalation_windows.html
 https://medium.com/@rahmatnurfauzi/windows-privilege-escalation-scripts-techniques-30fa37bd194
 http://www.fuzzysecurity.com/tutorials/16.html
