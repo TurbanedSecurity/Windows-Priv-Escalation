@@ -34,7 +34,12 @@ dir /s *pass* == *cred* == *vnc* == *.config*
 findstr /spin "password" *.*
 findstr /spin "password" *.*
 
-->using 
+->mimikatz
+extract cleartext passwords from memory
+
+->llmnr/netbios poisining
+use RESPONDER(Kali linux)
+
 
 
 
