@@ -1,19 +1,34 @@
-                                                          Windows priv escalation
+                                                      Windows priv escalation
 #Common Windows Privilege Escalation Vectors
+
 1)Stored Credentials
+
 2)Windows Kernel Exploit
+
 3)DLL Injection
+
 4)Unattended Answer File
+
 5)Insecure File/Folder Permissions
+
 6)Insecure Service Permissions
+
 7)DLL Hijacking
+
 8)Group Policy Preferences
+
 9)Unquoted Service Path
+
 10)Always Install Elevated
+
 11)Token Manipulation
+
 12)Insecure Registry Permissions
+
 13)Autologon User Credential
+
 14)User Account Control (UAC) Bypass
+
 15)Insecure Named Pipes Permissions
 
 --------------------------------Links and commands-----
