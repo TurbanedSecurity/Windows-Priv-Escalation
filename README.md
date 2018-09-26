@@ -291,7 +291,7 @@ netstat -ano
 
 Example output:
 
-Proto  Local address      Remote address     State        User  Inode  PID/Program name
+Proto      Local address      Remote address     State        User  Inode  PID/Program name
 
     -----  -------------      --------------     -----        ----  -----  ----------------
     tcp    0.0.0.0:21         0.0.0.0:*          LISTEN       0     0      -
@@ -318,21 +318,22 @@ Proto  Local address      Remote address     State        User  Inode  PID/Progr
     udp    192.168.1.9:500    0.0.0.0:*                       0     0      -
     
     
-Look for LISTENING/LISTEN. Compare that to the scan you did from the outside.
+--Look for LISTENING/LISTEN. Compare that to the scan you did from the outside.
 Does it contain any ports that are not accessible from the outside?
 If that is the case, maybe you can make a remote forward to access it.
 
-Port forward using plink
+--Port forward using plink
 
 plink.exe -l root -pw mysecretpassword 192.168.0.101 -R 8080:127.0.0.1:8080
 
 
-Port forward using meterpreter
+--Port forward using meterpreter
 
 portfwd add -l <attacker port> -p <victim port> -r <victim ip>
   
 portfwd add -l 3306 -p 3306 -r 192.168.1.101
-So how should we interpret the netstat output?
+
+--So how should we interpret the netstat output?
 
 Local address 0.0.0.0
 
