@@ -367,6 +367,9 @@ Includes Sherlock,JAWS,Windows Exploit suggester, Power Up and other automated s
 
 ------------------------------Some more resources---------------------------------------------------------------------------------
 https://toshellandback.com/2015/11/24/ms-priv-esc/
+
+https://pentestlab.blog/category/privilege-escalation/page/6/
+
 https://www.absolomb.com/2018-01-26-Windows-Privilege-Escalation-Guide/
 
 
