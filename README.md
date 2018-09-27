@@ -350,6 +350,21 @@ Local address 192.168.1.9 means that the service is only listening for connectio
 Some more very usefull links
   
   --------------------------------------------------------------------------------------------------------------
+13)->Remote dll injection 
+
+DLL injection is a technique which allows an attacker to run arbitrary code in the context of the address space of another process. If this process is running with excessive privileges then it could be abused by an attacker in order to execute malicious code in the form of a DLL file in order to elevate privileges.
+
+To inject the dll we can use the tool ReemoteDLLInjector from securityxploded 
+You just need to provide the process number and dll path containing payload which you can create using msfvenom.
+
+https://securityxploded.com/remote-dll-injector.php
+
+
+Command-RemtoeDLLInjector64.exe 3124 C:\shauninjecor.dll
+
+https://pentestlab.blog/category/privilege-escalation/page/4/
+
+---------------------------------------------------------------------------------------------------------------
 
 ->Using kernel exploits
 http://www.hackingarticles.in/windows-kernel-exploit-privilege-escalation/
